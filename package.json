@@ -53,6 +53,7 @@
     "typescript": "^3.5.2"
   },
   "dependencies": {
+    "callbag-subject": "^1.0.2",
     "resize-observer-polyfill": "^1.5.1"
   }
 }
