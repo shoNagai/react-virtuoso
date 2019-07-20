@@ -2,44 +2,150 @@ import React, { useState } from 'react'
 import * as ReactDOM from 'react-dom'
 import subject from 'callbag-subject'
 
-const Root: React.FC = () => {
-  return <div>Hello World</div>
+interface EnginePlugDefinition<EB, P = any, D = []> {
+  engine(dependencyBits?: InferDB<D>): EB
+  update?(props: P): void
+  dependencies?: D
 }
 
-/*
-type Plugin<Deps extends Plugin[],  = {
-  updateProps
+interface EnginePlug<EB, P = any, D = []> extends EnginePlugDefinition<EB, P, D> {
+  id: string
+  currentProps?: P
 }
 
-type PluginDefinition = {
-
+interface PlugConstructor<EB, P = any, D = []> {
+  (props?: P): EnginePlug<EB, P, D>
+  id: string
 }
- */
 
-function buildPlugin(definition) {
+type D1<DB1> = readonly [PlugConstructor<DB1, any, any>]
+type D2<DB1, DB2> = readonly [PlugConstructor<DB1, any, any>, PlugConstructor<DB2, any, any>]
+type D3<DB1, DB2, DB3> = readonly [
+  PlugConstructor<DB1, any, any>,
+  PlugConstructor<DB2, any, any>,
+  PlugConstructor<DB3, any, any>
+]
+
+type InferDB<D> = D extends D1<infer DB1>
+  ? DB1
+  : D extends D2<infer DB1, infer DB2>
+  ? DB1 & DB2
+  : D extends D3<infer DB1, infer DB2, infer DB3>
+  ? DB1 & DB2 & DB3
+  : never
+
+function definePlug<EB, P, D>(definition: EnginePlugDefinition<EB, P, D>): PlugConstructor<EB, P, D> {
   const id = (Symbol() as unknown) as string
-  return propValues => ({
+  const constructor = (propValues?: P) => ({
+    ...definition,
     id,
-    components: definition.components,
-    engine: definition.engine,
-    props: definition.props,
-    propValues,
+    currentProps: propValues,
   })
+
+  constructor.id = id
+
+  return constructor
 }
 
-const APlugin = buildPlugin({
-  components: { Root },
-  engine: () => {
-    const a$ = subject()
-    a$(0, (t, d) => {
-      if (t == 1) {
-        console.log('A got', d)
+interface EngineState {
+  activePlugs: string[]
+  engine: {}
+  engineSnapshots: {
+    [key: string]: {}
+  }
+}
+
+interface CreateEngineContext {
+  (): {
+    stateScaffold(): EngineState
+    getDerivedStateFromPlugs(plugs: PlugConstructor[], state: EngineState): EngineState | null
+  }
+}
+
+const createEngineContext: CreateEngineContext = () => {
+  const EngineContext = React.createContext({})
+
+  const Provider = ({ state, children }) => {
+    return <EngineContext.Provider value={state}>{children}</EngineContext.Provider>
+  }
+
+  const getDerivedStateFromPlugs = (plugs, currentState) => {}
+
+  const stateScaffold = () => {
+    return {
+      activePlugs: [],
+      engine: {},
+      engineSnapshots: {},
+    }
+  }
+
+  const useInput = () => {}
+
+  const useOutput = () => {}
+
+  return {
+    Provider,
+    getDerivedStateFromPlugs,
+    definePlug,
+    stateScaffold,
+    useInput,
+    useOutput,
+  }
+}
+
+function activatePlugin(activatedInTheCurrentCycle, state, plugins, id) {
+  let updatedState = state
+  if (activatedInTheCurrentCycle.indexOf(id) === -1) {
+    const { props, id, components, engine, propValues, dependencies } = plugins.find(plugin => plugin.id == id)
+
+    for (const dependency of dependencies) {
+      updatedState = activatePlugin(activatedInTheCurrentCycle, updatedState, plugins, dependency.id)
+    }
+
+    let extendedEngine
+
+    if (state.activePlugins.indexOf(id) === -1) {
+      extendedEngine = { ...updatedState.engine, ...engine() }
+      updatedState = {
+        ...updatedState,
+        engine: extendedEngine,
+        engineSnapshots: { ...state.engineSnapshots, id: extendedEngine },
+        activePlugins: [...state.activePlugins, id],
       }
-    })
-    return { a$ }
+    } else {
+      extendedEngine = state.engineSnapshots[id]
+    }
+
+    props(extendedEngine, propValues)
+    activatedInTheCurrentCycle.push(id)
+  }
+
+  return updatedState
+}
+
+const A = definePlug({
+  engine: () => {
+    return {
+      a: { a: () => console.log('foo!') },
+    }
   },
-  props: ({ a$ }, { a }) => {
-    a$(1, a)
+})
+
+const C = definePlug({
+  engine: () => {
+    return {
+      c: { c: () => console.log('baz!') },
+    }
+  },
+})
+
+const B = definePlug({
+  dependencies: [A, C] as const,
+  engine: bits => {
+    console.log(bits.a.a())
+    return {
+      b: { b: () => console.log('bar!') },
+    }
   },
 })
 
@@ -47,6 +153,7 @@ class ContainerComponent extends React.PureComponent {
   state = {
     activePlugins: [],
     engine: {},
+    engineSnapshots: {},
     components: {},
   }
 
@@ -82,7 +189,7 @@ const App = () => {
     <>
       <button onClick={() => setCount(count + 1)}>Increment</button>
       {count}
-      <ContainerComponent plugins={[APlugin({ a: count })]} />
+      <ContainerComponent plugins={[BPlugin(), APlugin({ a: count })]} />
     </>
   )
 }
