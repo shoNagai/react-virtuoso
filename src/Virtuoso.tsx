@@ -78,6 +78,7 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
     state.endReached.subscribeOnce(props.endReached)
     state.topItemCount.next(props.topItems || 0)
     state.totalCount.next(props.totalCount)
+    state.overscan.next(props.overscan || 0)
     return null
   }
 

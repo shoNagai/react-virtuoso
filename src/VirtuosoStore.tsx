@@ -10,33 +10,32 @@ export interface ItemHeight {
 }
 
 interface TVirtuosoConstructorParams {
-  overscan?: number
-  totalCount?: number
-  topItems?: number
   itemHeight?: number
 }
 
 type MapToTotal = (input: [OffsetList, number]) => number
 type ListScanner = (
-  overscan: number
-) => (items: ListItem[], viewState: [number, number, number, number, number, number, number, OffsetList]) => ListItem[]
+  items: ListItem[],
+  viewState: [number, number, number, number, number, number, number, number, OffsetList]
+) => ListItem[]
 
 const getListTop = (items: ListItem[]) => (items.length > 0 ? items[0].offset : 0)
 
 const mapToTotal: MapToTotal = ([offsetList, totalCount]) => offsetList.total(totalCount - 1)
 
-const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoConstructorParams) => {
+const VirtuosoStore = ({ itemHeight }: TVirtuosoConstructorParams) => {
   const viewportHeight$ = subject(0)
   const listHeight$ = subject(0)
   const scrollTop$ = subject(0)
   const footerHeight$ = subject(0)
   const itemHeights$ = subject<ItemHeight[]>()
-  const totalCount$ = subject(totalCount)
+  const totalCount$ = subject(0)
   const groupCounts$ = subject<number[]>()
   const topItemCount$ = subject<number>()
   let initialOffsetList = OffsetList.create()
   const stickyItems$ = subject<number[]>([])
   const scrollToIndex$ = coldSubject<TScrollLocation>()
+  const overscan$ = subject(0)
 
   if (itemHeight) {
     initialOffsetList = initialOffsetList.insert(0, 0, itemHeight)
@@ -64,9 +63,9 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
 
   let transposer: GroupIndexTransposer | StubIndexTransposer = new StubIndexTransposer()
 
-  const listScanner: ListScanner = overscan => (
+  const listScanner: ListScanner = (
     items,
-    [viewportHeight, scrollTop, topListHeight, listHeight, footerHeight, minIndex, totalCount, offsetList]
+    [viewportHeight, scrollTop, topListHeight, listHeight, footerHeight, minIndex, totalCount, overscan, offsetList]
   ) => {
     const itemLength = items.length
 
@@ -160,8 +159,9 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     footerHeight$,
     minListIndex$,
     totalCount$,
+    overscan$,
     offsetList$
-  ).pipe(scan(listScanner(overscan), []))
+  ).pipe(scan(listScanner, []))
 
   const endReached$ = coldSubject<number>()
   let currentEndIndex = 0
@@ -222,6 +222,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     topItemCount: topItemCount$,
     totalCount: totalCount$,
     scrollToIndex: scrollToIndex$,
+    overscan: overscan$,
 
     list: list$,
     topList: topList$,

@@ -19,9 +19,10 @@ export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, Virtuos
   }
 
   public static getDerivedStateFromProps(props: GroupedVirtuosoProps, state: VirtuosoState) {
+    state.groupCounts.next(props.groupCounts)
+    state.overscan.next(props.overscan || 0)
     state.endReached.subscribeOnce(props.endReached)
     state.isScrolling.subscribeOnce(props.scrollingStateChange)
-    state.groupCounts.next(props.groupCounts)
     state.groupIndices.subscribeOnce(props.groupIndices)
     return null
   }

@@ -184,6 +184,17 @@ export function combineLatest<S1, S2, S3, S4, S5, S6, S7, S8>(
   s7: TObservable<S7>,
   s8: TObservable<S8>
 ): TObservable<[S1, S2, S3, S4, S5, S6, S7, S8]>
+export function combineLatest<S1, S2, S3, S4, S5, S6, S7, S8, S9>(
+  s1: TObservable<S1>,
+  s2: TObservable<S2>,
+  s3: TObservable<S3>,
+  s4: TObservable<S4>,
+  s5: TObservable<S5>,
+  s6: TObservable<S6>,
+  s7: TObservable<S7>,
+  s8: TObservable<S8>,
+  s9: TObservable<S9>
+): TObservable<[S1, S2, S3, S4, S5, S6, S7, S8, S9]>
 export function combineLatest(...sources: TObservable<any>[]): TObservable<any[]> {
   const called = Array<boolean>(sources.length).fill(false)
   const values = Array<any>(sources.length)
