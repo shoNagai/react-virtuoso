@@ -3,7 +3,7 @@ import { VirtuosoContext } from './VirtuosoContext'
 import { useHeight, CallbackRef, useOutput } from './Utils'
 import { VirtuosoScroller, TScrollContainer } from './VirtuosoScroller'
 import { VirtuosoList, TRender } from './VirtuosoList'
-import { ItemHeight } from 'VirtuosoStore'
+import { ItemHeight } from './VirtuosoEngine'
 import { VirtuosoStyle, randomClassName, viewportStyle } from './Style'
 import { VirtuosoFiller } from './VirtuosoFiller'
 

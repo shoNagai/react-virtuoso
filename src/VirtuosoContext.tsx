@@ -1,4 +1,4 @@
 import { createContext } from 'react'
-import { VirtuosoStore } from './VirtuosoStore'
+import { VirtuosoEngine } from './VirtuosoEngine'
 
-export const VirtuosoContext = createContext<ReturnType<typeof VirtuosoStore> | undefined>(undefined)
+export const VirtuosoContext = createContext<ReturnType<typeof VirtuosoEngine> | undefined>(undefined)

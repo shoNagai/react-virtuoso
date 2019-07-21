@@ -1,7 +1,7 @@
 import { VirtuosoProps, VirtuosoState, VirtuosoPresentation, TItemContainer } from './Virtuoso'
 import { TScrollLocation } from './EngineCommons'
 import React, { ReactElement, PureComponent } from 'react'
-import { VirtuosoStore } from './VirtuosoStore'
+import { VirtuosoEngine } from './VirtuosoEngine'
 import { TRender } from './VirtuosoList'
 
 type GroupedVirtuosoProps = Pick<VirtuosoProps, Exclude<keyof VirtuosoProps, 'totalCount' | 'topItems' | 'item'>> & {
@@ -13,7 +13,7 @@ type GroupedVirtuosoProps = Pick<VirtuosoProps, Exclude<keyof VirtuosoProps, 'to
 }
 
 export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, VirtuosoState> {
-  public state = VirtuosoStore()
+  public state = VirtuosoEngine()
 
   public static getDerivedStateFromProps(props: GroupedVirtuosoProps, state: VirtuosoState) {
     state.groupCounts.next(props.groupCounts)

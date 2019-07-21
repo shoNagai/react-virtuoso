@@ -1,11 +1,11 @@
 import React, { CSSProperties, PureComponent, ReactElement, FC } from 'react'
 import { VirtuosoContext } from './VirtuosoContext'
 import { TScrollLocation } from './EngineCommons'
-import { VirtuosoStore } from './VirtuosoStore'
+import { VirtuosoEngine } from './VirtuosoEngine'
 import { TScrollContainer, VirtuosoView, TListContainer, DefaultListContainer, TFooterContainer } from './VirtuosoView'
 import { TRender, TRenderProps } from './VirtuosoList'
 
-export type VirtuosoState = ReturnType<typeof VirtuosoStore>
+export type VirtuosoState = ReturnType<typeof VirtuosoEngine>
 
 export type TItemContainer = React.FC<TRenderProps>
 
@@ -68,7 +68,7 @@ export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = ({
 }
 
 export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
-  public state = VirtuosoStore()
+  public state = VirtuosoEngine()
 
   public static getDerivedStateFromProps(props: VirtuosoProps, state: VirtuosoState) {
     state.isScrolling.subscribeOnce(props.scrollingStateChange)

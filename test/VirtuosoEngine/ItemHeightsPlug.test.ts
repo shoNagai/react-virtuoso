@@ -1,5 +1,5 @@
-import Plug from '../../src/VirtuosoEngine/ItemHeightsPlug'
-import C from '../../src/VirtuosoEngine/VirtuosoEngineContext'
+import Plug from '../../src/VirtuosoEnginePlugs/ItemHeightsPlug'
+import C from '../../src/VirtuosoEnginePlugs/VirtuosoEngineContext'
 import { AATree } from '../../src/AATree'
 import { OffsetList } from '../../src/OffsetList'
 import { EnginePlugConstructor } from '../../src/Engine/Plug'

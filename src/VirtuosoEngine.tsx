@@ -19,7 +19,7 @@ const getListTop = (items: ListItem[]) => (items.length > 0 ? items[0].offset : 
 
 const mapToTotal: MapToTotal = ([offsetList, totalCount]) => offsetList.total(totalCount - 1)
 
-const VirtuosoStore = () => {
+const VirtuosoEngine = () => {
   const viewportHeight$ = subject(0)
   const listHeight$ = subject(0)
   const scrollTop$ = subject(0)
@@ -237,4 +237,4 @@ const VirtuosoStore = () => {
   }
 }
 
-export { VirtuosoStore }
+export { VirtuosoEngine }
