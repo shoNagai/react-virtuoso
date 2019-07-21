@@ -2,7 +2,7 @@ import { VirtuosoStore } from '../src/VirtuosoStore'
 
 describe('Virtuoso Store', () => {
   it('calculates the total height of the list', done => {
-    const { totalHeight, itemHeights, totalCount } = VirtuosoStore({})
+    const { totalHeight, itemHeights, totalCount } = VirtuosoStore()
 
     totalCount.next(100)
 
@@ -22,7 +22,7 @@ describe('Virtuoso Store', () => {
   })
 
   it('leaves space for the footer', done => {
-    const { totalCount, totalHeight, footerHeight, itemHeights } = VirtuosoStore({})
+    const { totalCount, totalHeight, footerHeight, itemHeights } = VirtuosoStore()
 
     totalCount.next(100)
     itemHeights.next([{ start: 0, end: 0, size: 50 }])
@@ -35,7 +35,7 @@ describe('Virtuoso Store', () => {
   })
 
   it('recalculates total when item height changes', done => {
-    const { totalCount, totalHeight, itemHeights } = VirtuosoStore({})
+    const { totalCount, totalHeight, itemHeights } = VirtuosoStore()
 
     totalCount.next(100)
     itemHeights.next([{ start: 0, end: 0, size: 50 }])
@@ -48,7 +48,7 @@ describe('Virtuoso Store', () => {
   })
 
   it('emits a single item when the size is unknown', () => {
-    const { totalCount, viewportHeight, list } = VirtuosoStore({})
+    const { totalCount, viewportHeight, list } = VirtuosoStore()
     totalCount.next(100)
     viewportHeight.next(230)
 
@@ -58,7 +58,7 @@ describe('Virtuoso Store', () => {
   })
 
   it('fills in the space with enough items', () => {
-    const { totalCount, itemHeights, viewportHeight, list } = VirtuosoStore({})
+    const { totalCount, itemHeights, viewportHeight, list } = VirtuosoStore()
     totalCount.next(100)
 
     viewportHeight.next(230)
@@ -70,7 +70,7 @@ describe('Virtuoso Store', () => {
   })
 
   it('removes items when total is reduced', () => {
-    const { totalCount, itemHeights, viewportHeight, list } = VirtuosoStore({})
+    const { totalCount, itemHeights, viewportHeight, list } = VirtuosoStore()
     totalCount.next(100)
 
     viewportHeight.next(230)
@@ -98,7 +98,7 @@ describe('Virtuoso Store', () => {
   })
 
   it('provides exact items for a given size', () => {
-    const { totalCount, itemHeights, viewportHeight, list } = VirtuosoStore({})
+    const { totalCount, itemHeights, viewportHeight, list } = VirtuosoStore()
     totalCount.next(100)
 
     viewportHeight.next(250)
@@ -111,7 +111,7 @@ describe('Virtuoso Store', () => {
   })
 
   it('moves to the correct window', () => {
-    const { totalCount, itemHeights, viewportHeight, list, scrollTop } = VirtuosoStore({})
+    const { totalCount, itemHeights, viewportHeight, list, scrollTop } = VirtuosoStore()
     totalCount.next(100)
 
     viewportHeight.next(250)
@@ -125,7 +125,7 @@ describe('Virtuoso Store', () => {
   })
 
   it('fills in the overscan', () => {
-    const { totalCount, itemHeights, viewportHeight, list, scrollTop, overscan } = VirtuosoStore({})
+    const { totalCount, itemHeights, viewportHeight, list, scrollTop, overscan } = VirtuosoStore()
     totalCount.next(100)
 
     overscan.next(25)
@@ -140,7 +140,7 @@ describe('Virtuoso Store', () => {
   })
 
   it('skips the fixed items', () => {
-    const { totalCount, topItemCount, itemHeights, viewportHeight, list } = VirtuosoStore({})
+    const { totalCount, topItemCount, itemHeights, viewportHeight, list } = VirtuosoStore()
     totalCount.next(100)
 
     topItemCount.next(3)
@@ -154,7 +154,7 @@ describe('Virtuoso Store', () => {
   })
 
   it('picks the sticky items', done => {
-    const { topList, groupCounts, itemHeights, viewportHeight, list } = VirtuosoStore({})
+    const { topList, groupCounts, itemHeights, viewportHeight, list } = VirtuosoStore()
 
     groupCounts.next([10, 90, 100])
     viewportHeight.next(250)
@@ -174,7 +174,7 @@ describe('Virtuoso Store', () => {
   })
 
   it('selects the closest sticky item', done => {
-    const { topList, groupCounts, scrollTop, itemHeights, viewportHeight } = VirtuosoStore({})
+    const { topList, groupCounts, scrollTop, itemHeights, viewportHeight } = VirtuosoStore()
 
     groupCounts.next([10, 90, 100])
     viewportHeight.next(250)
@@ -190,7 +190,7 @@ describe('Virtuoso Store', () => {
   })
 
   it('infers total height for a grouped list from the first group and the first item', done => {
-    const { totalHeight, groupCounts, itemHeights } = VirtuosoStore({})
+    const { totalHeight, groupCounts, itemHeights } = VirtuosoStore()
 
     groupCounts.next([10, 90, 100])
     itemHeights.next([{ start: 0, end: 0, size: 50 }])
@@ -203,7 +203,7 @@ describe('Virtuoso Store', () => {
   })
 
   it('translates the scrollToIndex to a given offset', done => {
-    const { itemHeights, scrollToIndex, scrollTo } = VirtuosoStore({})
+    const { itemHeights, scrollToIndex, scrollTo } = VirtuosoStore()
     itemHeights.next([{ start: 0, end: 0, size: 50 }])
 
     scrollTo.subscribe(offset => {
@@ -215,7 +215,7 @@ describe('Virtuoso Store', () => {
   })
 
   it('scrolls to display the item at the bottom of the visible viewport', done => {
-    const { viewportHeight, itemHeights, scrollToIndex, scrollTo } = VirtuosoStore({})
+    const { viewportHeight, itemHeights, scrollToIndex, scrollTo } = VirtuosoStore()
     const itemSize = 50
     itemHeights.next([{ start: 0, end: 0, size: itemSize }])
     viewportHeight.next(820)
@@ -229,7 +229,7 @@ describe('Virtuoso Store', () => {
   })
 
   it('scrolls to display the item at the center of the visible viewport', done => {
-    const { viewportHeight, itemHeights, scrollToIndex, scrollTo } = VirtuosoStore({})
+    const { viewportHeight, itemHeights, scrollToIndex, scrollTo } = VirtuosoStore()
     const itemSize = 50
     itemHeights.next([{ start: 0, end: 0, size: itemSize }])
     viewportHeight.next(820)
@@ -243,7 +243,7 @@ describe('Virtuoso Store', () => {
   })
 
   it('takes into account the top list height when scrolling to a given location', done => {
-    const { totalCount, topItemCount, itemHeights, scrollToIndex, scrollTo } = VirtuosoStore({})
+    const { totalCount, topItemCount, itemHeights, scrollToIndex, scrollTo } = VirtuosoStore()
     totalCount.next(100)
     itemHeights.next([{ start: 0, end: 0, size: 50 }])
     topItemCount.next(3)
@@ -257,7 +257,7 @@ describe('Virtuoso Store', () => {
   })
 
   it('scrolls to display the first item in the group', done => {
-    const { itemHeights, scrollToIndex, scrollTo, groupCounts } = VirtuosoStore({})
+    const { itemHeights, scrollToIndex, scrollTo, groupCounts } = VirtuosoStore()
     groupCounts.next([10, 10, 10])
     itemHeights.next([{ start: 0, end: 0, size: 50 }])
     itemHeights.next([{ start: 1, end: 1, size: 20 }])

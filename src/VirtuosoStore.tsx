@@ -1,4 +1,4 @@
-import { subject, map, scan, withLatestFrom, filter, combineLatest, coldSubject } from '../src/tinyrx'
+import { subject, map, scan, withLatestFrom, filter, combineLatest, coldSubject, TSubscription } from '../src/tinyrx'
 import { OffsetList } from './OffsetList'
 import { StubIndexTransposer, GroupIndexTransposer, ListItem } from './GroupIndexTransposer'
 import { TScrollLocation, buildIsScrolling } from './EngineCommons'
@@ -7,10 +7,6 @@ export interface ItemHeight {
   start: number
   end: number
   size: number
-}
-
-interface TVirtuosoConstructorParams {
-  itemHeight?: number
 }
 
 type MapToTotal = (input: [OffsetList, number]) => number
@@ -23,7 +19,7 @@ const getListTop = (items: ListItem[]) => (items.length > 0 ? items[0].offset : 
 
 const mapToTotal: MapToTotal = ([offsetList, totalCount]) => offsetList.total(totalCount - 1)
 
-const VirtuosoStore = ({ itemHeight }: TVirtuosoConstructorParams) => {
+const VirtuosoStore = () => {
   const viewportHeight$ = subject(0)
   const listHeight$ = subject(0)
   const scrollTop$ = subject(0)
@@ -32,34 +28,37 @@ const VirtuosoStore = ({ itemHeight }: TVirtuosoConstructorParams) => {
   const totalCount$ = subject(0)
   const groupCounts$ = subject<number[]>()
   const topItemCount$ = subject<number>()
-  let initialOffsetList = OffsetList.create()
   const stickyItems$ = subject<number[]>([])
   const scrollToIndex$ = coldSubject<TScrollLocation>()
   const overscan$ = subject(0)
+  const fixedItemHeight$ = subject<number>(NaN)
+  const offsetList$ = subject(OffsetList.create())
 
-  if (itemHeight) {
-    initialOffsetList = initialOffsetList.insert(0, 0, itemHeight)
-  }
+  let unsubscribeFromItemHeights: TSubscription
 
-  const offsetList$ = subject(initialOffsetList)
+  fixedItemHeight$.subscribe(fixedItemHeight => {
+    unsubscribeFromItemHeights && unsubscribeFromItemHeights()
+    if (!isNaN(fixedItemHeight)) {
+      offsetList$.next(OffsetList.create().insert(0, 0, fixedItemHeight))
+    } else {
+      unsubscribeFromItemHeights = itemHeights$
+        .pipe(withLatestFrom(offsetList$, stickyItems$))
+        .subscribe(([heights, offsetList, stickyItems]) => {
+          let newList = offsetList
+          for (let { start, end, size } of heights) {
+            if (newList.empty() && start == end && stickyItems.indexOf(start) > -1) {
+              newList = newList.insertSpots(stickyItems, size)
+            } else {
+              newList = newList.insert(start, end, size)
+            }
+          }
 
-  if (!itemHeight) {
-    itemHeights$.pipe(withLatestFrom(offsetList$, stickyItems$)).subscribe(([heights, offsetList, stickyItems]) => {
-      let newList = offsetList
-
-      for (let { start, end, size } of heights) {
-        if (newList.empty() && start == end && stickyItems.indexOf(start) > -1) {
-          newList = newList.insertSpots(stickyItems, size)
-        } else {
-          newList = newList.insert(start, end, size)
-        }
-      }
-
-      if (newList !== offsetList) {
-        offsetList$.next(newList)
-      }
-    })
-  }
+          if (newList !== offsetList) {
+            offsetList$.next(newList)
+          }
+        })
+    }
+  })
 
   let transposer: GroupIndexTransposer | StubIndexTransposer = new StubIndexTransposer()
 
@@ -223,6 +222,7 @@ const VirtuosoStore = ({ itemHeight }: TVirtuosoConstructorParams) => {
     totalCount: totalCount$,
     scrollToIndex: scrollToIndex$,
     overscan: overscan$,
+    fixedItemHeight: fixedItemHeight$,
 
     list: list$,
     topList: topList$,

@@ -13,10 +13,7 @@ type GroupedVirtuosoProps = Pick<VirtuosoProps, Exclude<keyof VirtuosoProps, 'to
 }
 
 export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, VirtuosoState> {
-  public constructor(props: GroupedVirtuosoProps) {
-    super(props)
-    this.state = VirtuosoStore(props)
-  }
+  public state = VirtuosoStore()
 
   public static getDerivedStateFromProps(props: GroupedVirtuosoProps, state: VirtuosoState) {
     state.groupCounts.next(props.groupCounts)

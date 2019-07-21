@@ -68,10 +68,7 @@ export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = ({
 }
 
 export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
-  public constructor(props: VirtuosoProps) {
-    super(props)
-    this.state = VirtuosoStore(props)
-  }
+  public state = VirtuosoStore()
 
   public static getDerivedStateFromProps(props: VirtuosoProps, state: VirtuosoState) {
     state.isScrolling.subscribeOnce(props.scrollingStateChange)
@@ -79,6 +76,7 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
     state.topItemCount.next(props.topItems || 0)
     state.totalCount.next(props.totalCount)
     state.overscan.next(props.overscan || 0)
+    state.fixedItemHeight.next(props.itemHeight || NaN)
     return null
   }
 
