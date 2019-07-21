@@ -1,7 +1,6 @@
 import { subject, map, scan, withLatestFrom, filter, combineLatest, coldSubject } from '../src/tinyrx'
 import { OffsetList } from './OffsetList'
 import { StubIndexTransposer, GroupIndexTransposer, ListItem } from './GroupIndexTransposer'
-import { makeInput, makeOutput } from './rxio'
 import { TScrollLocation, buildIsScrolling } from './EngineCommons'
 
 export interface ItemHeight {
@@ -214,26 +213,26 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
   const isScrolling$ = buildIsScrolling(scrollTop$)
 
   return {
-    groupCounts: makeInput(groupCounts$),
-    itemHeights: makeInput(itemHeights$),
-    footerHeight: makeInput(footerHeight$),
-    listHeight: makeInput(listHeight$),
-    viewportHeight: makeInput(viewportHeight$),
-    scrollTop: makeInput(scrollTop$),
-    topItemCount: makeInput(topItemCount$),
-    totalCount: makeInput(totalCount$),
-    scrollToIndex: makeInput(scrollToIndex$),
+    groupCounts: groupCounts$,
+    itemHeights: itemHeights$,
+    footerHeight: footerHeight$,
+    listHeight: listHeight$,
+    viewportHeight: viewportHeight$,
+    scrollTop: scrollTop$,
+    topItemCount: topItemCount$,
+    totalCount: totalCount$,
+    scrollToIndex: scrollToIndex$,
 
-    list: makeOutput(list$),
-    topList: makeOutput(topList$),
-    listOffset: makeOutput(listOffset$),
-    totalHeight: makeOutput(totalHeight$),
-    endReached: makeOutput(endReached$),
-    isScrolling: makeOutput(isScrolling$),
-    stickyItems: makeOutput(stickyItems$),
-    groupIndices: makeOutput(groupIndices$),
-    stickyItemsOffset: makeOutput(stickyItemsOffset$),
-    scrollTo: makeOutput(scrollTo$),
+    list: list$,
+    topList: topList$,
+    listOffset: listOffset$,
+    totalHeight: totalHeight$,
+    endReached: endReached$,
+    isScrolling: isScrolling$,
+    stickyItems: stickyItems$,
+    groupIndices: groupIndices$,
+    stickyItemsOffset: stickyItemsOffset$,
+    scrollTo: scrollTo$,
   }
 }
 

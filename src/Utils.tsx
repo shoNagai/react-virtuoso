@@ -1,12 +1,12 @@
 import { useRef, useState, useLayoutEffect } from 'react'
 import ResizeObserver from 'resize-observer-polyfill'
-import { TInput, TOutput } from './rxio'
+import { TObservable, TSubscription, TSubject } from './tinyrx'
 
 export type CallbackRefParam = HTMLElement | null
 export type CallbackRef = (ref: CallbackRefParam) => void
 
 type UseHeight = (
-  input: TInput<number>,
+  input: TSubject<number>,
   onMount?: (ref: CallbackRefParam) => void,
   onResize?: (ref: HTMLElement) => void
 ) => CallbackRef
@@ -21,7 +21,7 @@ export const useHeight: UseHeight = (input, onMount, onResize) => {
       if (onResize) {
         onResize(entries[0].target as HTMLElement)
       }
-      input(newHeight)
+      input.next(newHeight)
     }
   })
 
@@ -40,13 +40,15 @@ export const useHeight: UseHeight = (input, onMount, onResize) => {
   return callbackRef
 }
 
-export function useOutput<T>(output: TOutput<T>, initialValue: T): T {
+export function useOutput<T>(output: TObservable<T>, initialValue: T): T {
   const [value, setValue] = useState(initialValue)
+  let unsubscribe: TSubscription | undefined
 
   useLayoutEffect(() => {
-    output(setValue)
+    unsubscribe && unsubscribe()
+    unsubscribe = output.subscribe(setValue)
     return () => {
-      output(undefined)
+      unsubscribe && unsubscribe()
     }
   }, [])
   return value

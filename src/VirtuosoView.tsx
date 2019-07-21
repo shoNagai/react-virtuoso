@@ -80,7 +80,7 @@ const ListWrapper: React.FC<{ fixedItemHeight: boolean; ListContainer: TListCont
       if (!fixedItemHeight) {
         const measuredItemHeights = getHeights(ref!.children)
         if (measuredItemHeights.length > 0) {
-          itemHeights(measuredItemHeights)
+          itemHeights.next(measuredItemHeights)
         }
       }
     }
@@ -114,8 +114,8 @@ export const VirtuosoView: React.FC<{
       style={style}
       ScrollContainer={ScrollContainer}
       className={className}
-      scrollTo={scrollTo}
-      scrollTop={scrollTop}
+      scrollTo={scrollTo.subscribe}
+      scrollTop={scrollTop.next}
     >
       <div ref={viewportCallbackRef} style={viewportStyle}>
         <ListWrapper fixedItemHeight={fixedItemHeight} ListContainer={ListContainer}>

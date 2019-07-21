@@ -40,15 +40,15 @@ export class VirtuosoGrid extends React.PureComponent<VirtuosoGridProps, Virtuos
   public state = VirtuosoGridEngine()
 
   public static getDerivedStateFromProps(props: VirtuosoGridProps, engine: VirtuosoGridState) {
-    engine.overscan(props.overscan || 0)
-    engine.totalCount(props.totalCount)
-    engine.isScrolling(props.scrollingStateChange)
-    engine.endReached(props.endReached)
+    engine.overscan.next(props.overscan || 0)
+    engine.totalCount.next(props.totalCount)
+    engine.isScrolling.subscribeOnce(props.scrollingStateChange)
+    engine.endReached.subscribeOnce(props.endReached)
     return null
   }
 
   public scrollToIndex(location: TScrollLocation) {
-    this.state.scrollToIndex(location)
+    this.state.scrollToIndex.next(location)
   }
 
   public render() {
@@ -94,7 +94,7 @@ const VirtuosoGridFC: React.FC<VirtuosoGridFCProps> = ({
 
   const viewportCallbackRef = useSize(({ element, width, height }) => {
     const firstItem = element.firstChild!.firstChild as HTMLElement
-    gridDimensions([width, height, firstItem.offsetWidth, firstItem.offsetHeight])
+    gridDimensions.next([width, height, firstItem.offsetWidth, firstItem.offsetHeight])
   })
 
   return (
@@ -102,8 +102,8 @@ const VirtuosoGridFC: React.FC<VirtuosoGridFCProps> = ({
       style={style}
       ScrollContainer={ScrollContainer}
       className={className}
-      scrollTo={scrollTo}
-      scrollTop={scrollTop}
+      scrollTo={scrollTo.subscribe}
+      scrollTop={scrollTop.next}
     >
       <div ref={viewportCallbackRef} style={viewportStyle}>
         {React.createElement(

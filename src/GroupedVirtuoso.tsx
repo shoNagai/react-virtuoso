@@ -19,10 +19,10 @@ export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, Virtuos
   }
 
   public static getDerivedStateFromProps(props: GroupedVirtuosoProps, state: VirtuosoState) {
-    state.endReached(props.endReached)
-    state.isScrolling(props.scrollingStateChange)
-    state.groupCounts(props.groupCounts)
-    state.groupIndices(props.groupIndices)
+    state.endReached.subscribeOnce(props.endReached)
+    state.isScrolling.subscribeOnce(props.scrollingStateChange)
+    state.groupCounts.next(props.groupCounts)
+    state.groupIndices.subscribeOnce(props.groupIndices)
     return null
   }
 
@@ -56,7 +56,7 @@ export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, Virtuos
   }
 
   public scrollToIndex(location: TScrollLocation) {
-    this.state.scrollToIndex(location)
+    this.state.scrollToIndex.next(location)
   }
 
   public render() {

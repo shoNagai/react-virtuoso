@@ -74,10 +74,10 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
   }
 
   public static getDerivedStateFromProps(props: VirtuosoProps, state: VirtuosoState) {
-    state.isScrolling(props.scrollingStateChange)
-    state.endReached(props.endReached)
-    state.topItemCount(props.topItems || 0)
-    state.totalCount(props.totalCount)
+    state.isScrolling.subscribeOnce(props.scrollingStateChange)
+    state.endReached.subscribeOnce(props.endReached)
+    state.topItemCount.next(props.topItems || 0)
+    state.totalCount.next(props.totalCount)
     return null
   }
 
@@ -97,7 +97,7 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
   }
 
   public scrollToIndex(location: TScrollLocation) {
-    this.state.scrollToIndex(location)
+    this.state.scrollToIndex.next(location)
   }
 
   public render() {

@@ -1,184 +1,59 @@
 import React, { useState } from 'react'
 import * as ReactDOM from 'react-dom'
-import subject from 'callbag-subject'
+import { subject, map } from '../src/tinyrx'
+import { createEngineContext } from '../src/Engine/ReactEngineContext'
+import { EngineState } from '../src/Engine/Plug'
 
-interface EnginePlugDefinition<EB, P = any, D = []> {
-  engine(dependencyBits?: InferDB<D>): EB
-  update?(props: P): void
-  dependencies?: D
-}
+const FooEngineContext = createEngineContext()
 
-interface EnginePlug<EB, P = any, D = []> extends EnginePlugDefinition<EB, P, D> {
-  id: string
-  currentProps?: P
-}
-
-interface PlugConstructor<EB, P = any, D = []> {
-  (props?: P): EnginePlug<EB, P, D>
-  id: string
-}
-
-type D1<DB1> = readonly [PlugConstructor<DB1, any, any>]
-type D2<DB1, DB2> = readonly [PlugConstructor<DB1, any, any>, PlugConstructor<DB2, any, any>]
-type D3<DB1, DB2, DB3> = readonly [
-  PlugConstructor<DB1, any, any>,
-  PlugConstructor<DB2, any, any>,
-  PlugConstructor<DB3, any, any>
-]
-
-type InferDB<D> = D extends D1<infer DB1>
-  ? DB1
-  : D extends D2<infer DB1, infer DB2>
-  ? DB1 & DB2
-  : D extends D3<infer DB1, infer DB2, infer DB3>
-  ? DB1 & DB2 & DB3
-  : never
-
-function definePlug<EB, P, D>(definition: EnginePlugDefinition<EB, P, D>): PlugConstructor<EB, P, D> {
-  const id = (Symbol() as unknown) as string
-  const constructor = (propValues?: P) => ({
-    ...definition,
-    id,
-    currentProps: propValues,
-  })
-
-  constructor.id = id
-
-  return constructor
-}
-
-interface EngineState {
-  activePlugs: string[]
-  engine: {}
-  engineSnapshots: {
-    [key: string]: {}
-  }
-}
-
-interface CreateEngineContext {
-  (): {
-    stateScaffold(): EngineState
-    getDerivedStateFromPlugs(plugs: PlugConstructor[], state: EngineState): EngineState | null
-  }
-}
-
-const createEngineContext: CreateEngineContext = () => {
-  const EngineContext = React.createContext({})
-
-  const Provider = ({ state, children }) => {
-    return <EngineContext.Provider value={state}>{children}</EngineContext.Provider>
-  }
-
-  const getDerivedStateFromPlugs = (plugs, currentState) => {}
-
-  const stateScaffold = () => {
+const A = FooEngineContext.definePlug(
+  [] as const,
+  () => {
+    const input = subject(1)
     return {
-      activePlugs: [],
-      engine: {},
-      engineSnapshots: {},
+      input,
     }
+  },
+  ({ input }, { a }: { a: number }) => {
+    input.next(a)
   }
+)
 
-  const useInput = () => {}
-
-  const useOutput = () => {}
-
+const B = FooEngineContext.definePlug([A] as const, ({ input }) => {
+  const output = input.pipe(
+    map(val => {
+      return val * 2
+    })
+  )
   return {
-    Provider,
-    getDerivedStateFromPlugs,
-    definePlug,
-    stateScaffold,
-    useInput,
-    useOutput,
+    output,
   }
+})
+
+const Child: React.FC = () => {
+  const output = FooEngineContext.useOutput<typeof B, number>('output')
+  const input = FooEngineContext.useInput<typeof A, number>('input')
+  return (
+    <>
+      <div>{output}</div>
+      <button onClick={() => input(output + 1)}>Increment me child!</button>
+    </>
+  )
 }
 
-function activatePlugin(activatedInTheCurrentCycle, state, plugins, id) {
-  let updatedState = state
-  if (activatedInTheCurrentCycle.indexOf(id) === -1) {
-    const { props, id, components, engine, propValues, dependencies } = plugins.find(plugin => plugin.id == id)
+class ContainerComponent extends React.PureComponent<{ plugs: any }, EngineState> {
+  public state = FooEngineContext.stateScaffold()
 
-    for (const dependency of dependencies) {
-      updatedState = activatePlugin(activatedInTheCurrentCycle, updatedState, plugins, dependency.id)
-    }
-
-    let extendedEngine
-
-    if (state.activePlugins.indexOf(id) === -1) {
-      extendedEngine = { ...updatedState.engine, ...engine() }
-      updatedState = {
-        ...updatedState,
-        engine: extendedEngine,
-        engineSnapshots: { ...state.engineSnapshots, id: extendedEngine },
-        activePlugins: [...state.activePlugins, id],
-      }
-    } else {
-      extendedEngine = state.engineSnapshots[id]
-    }
-
-    props(extendedEngine, propValues)
-    activatedInTheCurrentCycle.push(id)
+  public static getDerivedStateFromProps(componentProps: { plugs: any }, state: EngineState) {
+    return FooEngineContext.getDerivedStateFromPlugs(componentProps.plugs, state)
   }
 
-  return updatedState
-}
-
-const A = definePlug({
-  engine: () => {
-    return {
-      a: { a: () => console.log('foo!') },
-    }
-  },
-})
-
-const C = definePlug({
-  engine: () => {
-    return {
-      c: { c: () => console.log('baz!') },
-    }
-  },
-})
-
-const B = definePlug({
-  dependencies: [A, C] as const,
-  engine: bits => {
-    console.log(bits.a.a())
-    return {
-      b: { b: () => console.log('bar!') },
-    }
-  },
-})
-
-class ContainerComponent extends React.PureComponent {
-  state = {
-    activePlugins: [],
-    engine: {},
-    engineSnapshots: {},
-    components: {},
-  }
-
-  static getDerivedStateFromProps(componentProps, state) {
-    let newState = state
-    for (const { props, id, components, engine, propValues } of componentProps.plugins) {
-      if (state.activePlugins.indexOf(id) === -1) {
-        state = {
-          ...state,
-          engine: { ...state.engine, ...engine() },
-          components: { ...state.components, ...components },
-        }
-      }
-      props(state.engine, propValues)
-    }
-
-    if (state !== newState) {
-      return newState
-    }
-
-    return null
-  }
-
-  render() {
-    return <div>Kur</div>
+  public render() {
+    return (
+      <FooEngineContext.Provider state={this.state}>
+        <Child />
+      </FooEngineContext.Provider>
+    )
   }
 }
 
@@ -189,7 +64,8 @@ const App = () => {
     <>
       <button onClick={() => setCount(count + 1)}>Increment</button>
       {count}
-      <ContainerComponent plugins={[BPlugin(), APlugin({ a: count })]} />
+      <ContainerComponent plugs={[A({ a: 30 }), B()]} />
+      <ContainerComponent plugs={[A({ a: 40 }), B()]} />
     </>
   )
 }

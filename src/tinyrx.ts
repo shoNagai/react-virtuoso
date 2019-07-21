@@ -5,10 +5,15 @@ export type TOperator<T, K> = (val: T, done: (result: K) => void) => void
 
 export interface TObservable<T> {
   subscribe: TSubscribe<T>
+  subscribeOnce: (subscriber: TSubscriber<T> | undefined) => void
   pipe(...operators: []): TObservable<T>
   pipe<R1>(...operators: [TOperator<T, R1>]): TObservable<R1>
   pipe<R1, R2>(...operators: [TOperator<T, R1>, TOperator<R1, R2>]): TObservable<R2>
   pipe<R1, R2, R3>(...operators: [TOperator<T, R1>, TOperator<R1, R2>, TOperator<R2, R3>]): TObservable<R3>
+}
+
+export interface TSubject<T> {
+  next(val: T): void
 }
 
 function combineOperators<A1>(): TOperator<A1, A1>
@@ -65,8 +70,17 @@ export function observable<T, K>(source: TSubscribe<T>, operator: TOperator<T, K
     return source(val => operator(val, subscriber))
   }
 
+  let unsubscribe: TSubscription | undefined
+  const subscribeOnce = (subscriber: TSubscriber<K> | undefined) => {
+    unsubscribe && unsubscribe()
+    if (subscriber) {
+      unsubscribe = subscribe(subscriber)
+    }
+  }
+
   return {
     subscribe,
+    subscribeOnce,
     pipe: buildPipe(subscribe),
   }
 }
@@ -92,9 +106,18 @@ export function subject<T>(initial?: T, distinct = true) {
     }
   }
 
+  let unsubscribe: TSubscription | undefined
+  const subscribeOnce = (subscriber: TSubscriber<T> | undefined) => {
+    unsubscribe && unsubscribe()
+    if (subscriber) {
+      unsubscribe = subscribe(subscriber)
+    }
+  }
+
   return {
     next,
     subscribe,
+    subscribeOnce,
     pipe: buildPipe(subscribe),
     subscribers,
   }
@@ -114,9 +137,18 @@ export function coldSubject<T>() {
     }
   }
 
+  let unsubscribe: TSubscription | undefined
+  const subscribeOnce = (subscriber: TSubscriber<T> | undefined) => {
+    unsubscribe && unsubscribe()
+    if (subscriber) {
+      unsubscribe = subscribe(subscriber)
+    }
+  }
+
   return {
     next,
     subscribe,
+    subscribeOnce,
     pipe: buildPipe(subscribe),
   }
 }
@@ -177,7 +209,15 @@ export function combineLatest(...sources: TObservable<any>[]): TObservable<any[]
     }
   }
 
-  return { subscribe, pipe: buildPipe(subscribe) }
+  let unsubscribe: TSubscription | undefined
+  const subscribeOnce = (subscriber: TSubscriber<any[]> | undefined) => {
+    unsubscribe && unsubscribe()
+    if (subscriber) {
+      unsubscribe = subscribe(subscriber)
+    }
+  }
+
+  return { subscribe, subscribeOnce, pipe: buildPipe(subscribe) }
 }
 
 export function map<T, K>(map: (val: T) => K): (val: T, subscriber: TSubscriber<K>) => void {
