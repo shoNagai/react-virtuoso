@@ -50,6 +50,9 @@ export function scrollToIndexEngine({
     .pipe(
       withLatestFrom(offsetList$, topListHeight$, stickyItems$, viewportHeight$, totalCount$, totalHeight$),
       map(([location, offsetList, topListHeight, stickyItems, viewportHeight, totalCount, totalHeight]) => {
+        if (offsetList.empty() || offsetList.rangeTree.empty()) {
+          return
+        }
         if (typeof location === 'number') {
           location = { index: location, align: 'start', behavior: 'auto' }
         }
@@ -75,7 +78,11 @@ export function scrollToIndexEngine({
         }
       })
     )
-    .subscribe(scrollTo$.next)
+    .subscribe(scrollToOptions => {
+      if (scrollToOptions) {
+        scrollTo$.next(scrollToOptions)
+      }
+    })
 
   scrollTop$.pipe(withLatestFrom(scrollTopReportedAfterScrollToIndex$)).subscribe(([_, scrollTopReported]) => {
     if (!scrollTopReported) {
