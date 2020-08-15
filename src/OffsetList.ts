@@ -180,6 +180,10 @@ export class OffsetList {
   }
 
   public itemAt(index: number): Item {
+    if (this.rangeTree.empty()) {
+      return { index, size: 0, offset: NaN }
+    }
+
     const size = this.rangeTree.findMaxValue(index)
     return { index, size, offset: NaN }
   }
