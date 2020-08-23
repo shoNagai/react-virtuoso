@@ -15,9 +15,10 @@ export type TRender = (item: ListItem, props: TRenderProps) => ReactElement
 
 export interface VirtuosoListProps {
   emptyComponent?: ComponentType
+  isHorizontal: boolean | undefined
 }
 
-export const VirtuosoList: React.FC<VirtuosoListProps> = React.memo(({ emptyComponent }) => {
+export const VirtuosoList: React.FC<VirtuosoListProps> = React.memo(({ emptyComponent, isHorizontal }) => {
   const { isSeeking, topList, list, itemRender } = useContext(VirtuosoContext)!
   const items = useOutput<ListItem[]>(list, [])
   const topItems = useOutput<ListItem[]>(topList, [])
@@ -32,23 +33,30 @@ export const VirtuosoList: React.FC<VirtuosoListProps> = React.memo(({ emptyComp
     return acc + item.size
   }, 0)
 
+  const displayStyle: CSSProperties = {
+    display: isHorizontal ? 'inline-block' : 'block',
+  }
+
   topItems.forEach((item, index) => {
     const itemIndex = item.index
     renderedTopItemIndices.push(itemIndex)
 
-    const style: CSSProperties = {
-      top: `${topOffset}px`,
-      marginTop: index === 0 ? `${-marginTop}px` : undefined,
-      zIndex: 2,
-      position: positionStickyCssValue(),
-    }
+    const directionStyle: CSSProperties = isHorizontal
+      ? {
+          left: `${topOffset}px`,
+          marginLeft: index === 0 ? `${-marginTop}px` : undefined,
+        }
+      : {
+          top: `${topOffset}px`,
+          marginTop: index === 0 ? `${-marginTop}px` : undefined,
+        }
 
     const props = {
       key: itemIndex,
       'data-index': itemIndex,
       'data-known-size': item.size,
       renderPlaceholder,
-      style,
+      style: { ...displayStyle, ...directionStyle, zIndex: 2, position: positionStickyCssValue() },
     }
 
     render && renderedItems.push(render.render(item, props))
@@ -67,6 +75,7 @@ export const VirtuosoList: React.FC<VirtuosoListProps> = React.memo(({ emptyComp
           'data-index': item.index,
           'data-known-size': item.size,
           renderPlaceholder,
+          style: displayStyle,
         })
       )
   })

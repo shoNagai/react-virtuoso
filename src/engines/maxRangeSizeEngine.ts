@@ -7,9 +7,10 @@ export interface MaxRangeSizeParams {
   scrollTo$: TSubject<ScrollToOptions>
   scrollTop$: TObservable<number>
   list$: TObservable<ListItem[]>
+  isHorizontal: boolean | undefined
 }
 
-export function maxRangeSizeEngine({ list$, offsetList$, scrollTop$, scrollTo$ }: MaxRangeSizeParams) {
+export function maxRangeSizeEngine({ list$, offsetList$, scrollTop$, scrollTo$, isHorizontal }: MaxRangeSizeParams) {
   const scheduledReadjust$ = subject<{ index: number; offset: number } | null>(null)
   const maxRangeSize$ = subject(Infinity)
 
@@ -31,8 +32,12 @@ export function maxRangeSizeEngine({ list$, offsetList$, scrollTop$, scrollTo$ }
   // 3. once the offset list is reset, we compensate the scroll.
   offsetList$.pipe(withLatestFrom(scheduledReadjust$)).subscribe(([offsetList, adjust]) => {
     if (adjust !== null) {
-      const scrollTo = offsetList.offsetOf(adjust!.index) + adjust!.offset
-      scrollTo$.next({ top: scrollTo })
+      const scrollOffset = offsetList.offsetOf(adjust!.index) + adjust!.offset
+      if (isHorizontal) {
+        scrollTo$.next({ left: scrollOffset })
+      } else {
+        scrollTo$.next({ top: scrollOffset })
+      }
       scheduledReadjust$.next(null)
     }
   })

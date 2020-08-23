@@ -21,13 +21,15 @@ export interface ScrollSeekToggle {
   (velocity: number, range: ListRange): boolean
 }
 
-export type TSeekPlaceholder = ComponentType<{ height: number; index: number }>
+export type TSeekVerticalPlaceholder = ComponentType<{ height: number; index: number }>
+export type TSeekHorizontalPlaceholder = ComponentType<{ width: number; index: number }>
 
 export interface ScrollSeekConfiguration {
   enter: ScrollSeekToggle
   change: (velocity: number, range: ListRange) => void
   exit: ScrollSeekToggle
-  placeholder: TSeekPlaceholder
+  verticalPlaceholder: TSeekVerticalPlaceholder
+  horizontalplaceholder: TSeekHorizontalPlaceholder
 }
 
 interface ScrollSeekParams {

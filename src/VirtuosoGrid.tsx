@@ -4,7 +4,7 @@ import { TSubscriber } from './tinyrx'
 import { VirtuosoGridEngine } from './VirtuosoGridEngine'
 import { VirtuosoScroller, TScrollContainer } from './VirtuosoScroller'
 import { useOutput, useSize } from './Utils'
-import { viewportStyle } from './Style'
+import { verticalStyle } from './Style'
 import { TScrollLocation, TContainer } from './EngineCommons'
 import { ListRange, ScrollSeekConfiguration } from './engines/scrollSeekEngine'
 
@@ -94,7 +94,7 @@ const VirtuosoGridFC: React.FC<VirtuosoGridFCProps> = ({
       scrollTo={scrollTo}
       scrollTop={scrollTop}
     >
-      <div ref={viewportCallbackRef} style={viewportStyle}>
+      <div ref={viewportCallbackRef} style={verticalStyle}>
         {React.createElement(
           ListContainer,
           {

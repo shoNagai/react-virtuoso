@@ -159,7 +159,7 @@ export const VirtuosoGridEngine = (initialItemCount = 0) => {
             let children: React.ReactElement
 
             if (scrollSeek && renderPlaceholder && itemHeight) {
-              children = React.createElement(scrollSeek.placeholder, {
+              children = React.createElement(scrollSeek.verticalPlaceholder, {
                 height: itemHeight,
                 index,
               })

@@ -92,7 +92,8 @@ export function listEngine({
           const indexOutOfAllowedRange =
             itemLength > 0 && (items[0].index < minIndex || items[itemLength - 1].index > maxIndex)
 
-          if (listBottom < viewportHeight || indexOutOfAllowedRange) {
+          // TODO: in the horizontal style, the width of the listBottom and the viewportHeight are sometimes the same.
+          if (listBottom <= viewportHeight || indexOutOfAllowedRange) {
             const endOffset = scrollTop + viewportHeight + overscan * 2 - 1
             items = transposer.transpose(offsetList.range(scrollTop, endOffset, minIndex, maxIndex))
           }

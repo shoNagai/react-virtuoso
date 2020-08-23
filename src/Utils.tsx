@@ -8,14 +8,16 @@ export type CallbackRef = (ref: CallbackRefParam) => void
 type UseHeight = (
   input: TInput<number>,
   onMount?: (ref: CallbackRefParam) => void,
-  onResize?: (ref: HTMLElement) => void
+  onResize?: (ref: HTMLElement) => void,
+  isHorizontal?: boolean
 ) => CallbackRef
 
-export const useHeight: UseHeight = (input, onMount, onResize) => {
+export const useHeight: UseHeight = (input, onMount, onResize, isHorizontal) => {
   const ref = useRef<CallbackRefParam>(null)
   const animationFrameID = useRef<number>(0)
   const observer = new ResizeObserver(entries => {
-    const newHeight = Math.round(entries[0].contentRect.height)
+    const entrySize = isHorizontal ? entries[0].contentRect.width : entries[0].contentRect.height
+    const newHeight = Math.round(entrySize)
     if (onResize) {
       animationFrameID.current = window.requestAnimationFrame(() => {
         const element = entries[0].target as HTMLElement

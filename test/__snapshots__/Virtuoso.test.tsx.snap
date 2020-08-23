@@ -77,7 +77,19 @@ exports[`render empty list 1`] = `
             "marginTop": "0px",
           }
         }
-      />
+      >
+        <div
+          data-index={0}
+          data-known-size={0}
+          style={
+            Object {
+              "display": "block",
+            }
+          }
+        >
+          0
+        </div>
+      </div>
     </div>
     <div
       style={

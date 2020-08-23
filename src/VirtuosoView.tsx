@@ -1,10 +1,10 @@
 import * as React from 'react'
 import { CSSProperties, FC, ReactElement, useContext, ComponentType } from 'react'
 import { ItemHeight } from 'VirtuosoStore'
-import { viewportStyle } from './Style'
+import { verticalStyle, horizontalStyle } from './Style'
 import { CallbackRef, useHeight, useOutput } from './Utils'
 import { VirtuosoContext } from './VirtuosoContext'
-import { VirtuosoFiller } from './VirtuosoFiller'
+import { VerticalFiller, HorizontalFiller } from './VirtuosoFiller'
 import { VirtuosoList } from './VirtuosoList'
 import { TScrollContainer, VirtuosoScroller } from './VirtuosoScroller'
 
@@ -50,7 +50,7 @@ const VirtuosoFooter: FC<{ footer: () => ReactElement; FooterContainer?: TFooter
   return <FooterContainer footerRef={footerCallbackRef}>{footer()}</FooterContainer>
 }
 
-const getHeights = (children: HTMLCollection) => {
+const getHeights = (children: HTMLCollection, isHorizontal: boolean | undefined) => {
   const results: ItemHeight[] = []
   for (let i = 0, len = children.length; i < len; i++) {
     const child = children.item(i) as HTMLElement
@@ -61,7 +61,7 @@ const getHeights = (children: HTMLCollection) => {
 
     const index = parseInt(child.dataset.index!)
     const knownSize = parseInt(child.dataset.knownSize!)
-    const size = child.offsetHeight
+    const size = isHorizontal ? child.offsetWidth : child.offsetHeight
 
     if (size === knownSize || size === 0) {
       continue
@@ -78,24 +78,25 @@ const getHeights = (children: HTMLCollection) => {
   return results
 }
 
-const ListWrapper: React.FC<{ fixedItemHeight: boolean; ListContainer: TListContainer }> = ({
-  fixedItemHeight,
-  children,
-  ListContainer,
-}) => {
+const ListWrapper: React.FC<{
+  fixedItemHeight: boolean
+  ListContainer: TListContainer
+  isHorizontal: boolean | undefined
+}> = ({ fixedItemHeight, children, ListContainer, isHorizontal }) => {
   const { listHeight, itemHeights, listOffset } = useContext(VirtuosoContext)!
   const translate = useOutput<number>(listOffset, 0)
-  const style = { marginTop: `${translate}px` }
+  const style: React.CSSProperties = isHorizontal ? { marginLeft: `${translate}px` } : { marginTop: `${translate}px` }
 
   const listCallbackRef = useHeight(
     listHeight,
     () => {},
     ref => {
       if (!fixedItemHeight) {
-        const measuredItemHeights = getHeights(ref!.children)
+        const measuredItemHeights = getHeights(ref!.children, isHorizontal)
         itemHeights(measuredItemHeights)
       }
-    }
+    },
+    isHorizontal
   )
 
   return (
@@ -116,6 +117,7 @@ export const VirtuosoView: React.FC<{
   FooterContainer?: TFooterContainer
   fixedItemHeight: boolean
   emptyComponent?: ComponentType
+  isHorizontal?: boolean
 }> = ({
   style,
   header,
@@ -127,6 +129,7 @@ export const VirtuosoView: React.FC<{
   FooterContainer,
   className,
   emptyComponent,
+  isHorizontal,
 }) => {
   const { scrollTo, scrollTop, totalHeight, viewportHeight } = useContext(VirtuosoContext)!
   const fillerHeight = useOutput<number>(totalHeight, 0)
@@ -143,16 +146,17 @@ export const VirtuosoView: React.FC<{
       className={className}
       scrollTo={scrollTo}
       scrollTop={reportScrollTop}
+      isHorizontal={isHorizontal}
     >
-      <div ref={viewportCallbackRef} style={viewportStyle}>
-        <ListWrapper fixedItemHeight={fixedItemHeight} ListContainer={ListContainer}>
+      <div ref={viewportCallbackRef} style={isHorizontal ? horizontalStyle : verticalStyle}>
+        <ListWrapper fixedItemHeight={fixedItemHeight} ListContainer={ListContainer} isHorizontal={isHorizontal}>
           {header && <VirtuosoHeader header={header} HeaderContainer={HeaderContainer} />}
-          <VirtuosoList emptyComponent={emptyComponent} />
+          <VirtuosoList emptyComponent={emptyComponent} isHorizontal={isHorizontal} />
           {footer && <VirtuosoFooter footer={footer} FooterContainer={FooterContainer} />}
         </ListWrapper>
       </div>
 
-      <VirtuosoFiller height={fillerHeight} />
+      {isHorizontal ? <HorizontalFiller width={fillerHeight} /> : <VerticalFiller height={fillerHeight} />}
     </VirtuosoScroller>
   )
 }

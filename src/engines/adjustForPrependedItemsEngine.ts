@@ -5,9 +5,15 @@ interface AdjustForPrependedItemsParams {
   offsetList$: TSubject<OffsetList>
   scrollTop$: TObservable<number>
   scrollTo$: TSubject<ScrollToOptions>
+  isHorizontal: boolean | undefined
 }
 
-export function adjustForPrependedItemsEngine({ offsetList$, scrollTop$, scrollTo$ }: AdjustForPrependedItemsParams) {
+export function adjustForPrependedItemsEngine({
+  offsetList$,
+  scrollTop$,
+  scrollTo$,
+  isHorizontal,
+}: AdjustForPrependedItemsParams) {
   const adjustForPrependedItems$ = coldSubject<number>()
 
   const adjustmentInProgress$ = subject(false)
@@ -22,7 +28,11 @@ export function adjustForPrependedItemsEngine({ offsetList$, scrollTop$, scrollT
       offsetList$.next(offsetList.adjustForPrependedItems(count))
 
       setTimeout(() => {
-        scrollTo$.next({ top: count * offsetList.getDefaultSize() + scrollTop })
+        if (isHorizontal) {
+          scrollTo$.next({ left: count * offsetList.getDefaultSize() + scrollTop })
+        } else {
+          scrollTo$.next({ top: count * offsetList.getDefaultSize() + scrollTop })
+        }
         adjustmentInProgress$.next(false)
       })
     })

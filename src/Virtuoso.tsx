@@ -61,6 +61,7 @@ export interface VirtuosoProps {
   maxHeightCacheSize?: number
   scrollSeek?: ScrollSeekConfiguration
   emptyComponent?: ComponentType
+  isHorizontal?: boolean
 }
 
 export interface TVirtuosoPresentationProps {
@@ -75,6 +76,7 @@ export interface TVirtuosoPresentationProps {
   FooterContainer?: TFooterContainer
   ListContainer?: TListContainer
   emptyComponent?: ComponentType
+  isHorizontal?: boolean
 }
 
 export { TScrollContainer, TListContainer }
@@ -93,6 +95,7 @@ export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = React.memo(
     HeaderContainer,
     FooterContainer,
     emptyComponent,
+    isHorizontal,
   }) => {
     return (
       <VirtuosoContext.Provider value={contextValue}>
@@ -107,6 +110,7 @@ export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = React.memo(
           FooterContainer={FooterContainer}
           ListContainer={ListContainer || DefaultListContainer}
           emptyComponent={emptyComponent}
+          isHorizontal={isHorizontal}
         />
       </VirtuosoContext.Provider>
     )
@@ -191,6 +195,7 @@ export const Virtuoso = forwardRef<VirtuosoMethods, VirtuosoProps>((props, ref) 
       FooterContainer={props.FooterContainer}
       ListContainer={props.ListContainer}
       emptyComponent={props.emptyComponent}
+      isHorizontal={props.isHorizontal}
     />
   )
 })

@@ -13,6 +13,7 @@ export interface ScrollToIndexParams {
   totalHeight$: TObservable<number>
   scrollTop$: TObservable<number>
   initialTopMostItemIndex: number | undefined
+  isHorizontal: boolean | undefined
 }
 
 export function scrollToIndexEngine({
@@ -25,6 +26,7 @@ export function scrollToIndexEngine({
   initialTopMostItemIndex,
   heightsChanged$,
   scrollTop$,
+  isHorizontal,
 }: ScrollToIndexParams) {
   const scrollToIndex$ = coldSubject<TScrollLocation>()
   const scrollToIndexRequestPending$ = subject(false)
@@ -37,6 +39,7 @@ export function scrollToIndexEngine({
     scrollToIndex$,
     scrollTop$,
     initialTopMostItemIndex,
+    isHorizontal,
   })
 
   heightsChanged$.pipe(withLatestFrom(scrolledToTopMostItem$)).subscribe(([[changed], scrolledToTopMostItem]) => {
@@ -74,6 +77,13 @@ export function scrollToIndexEngine({
         }
 
         scrollTopReportedAfterScrollToIndex$.next(false)
+
+        if (isHorizontal) {
+          return {
+            left: Math.max(0, Math.min(offset, Math.floor(totalHeight - viewportHeight))),
+            behavior: location.behavior ?? 'auto',
+          }
+        }
         return {
           top: Math.max(0, Math.min(offset, Math.floor(totalHeight - viewportHeight))),
           behavior: location.behavior ?? 'auto',

@@ -8,6 +8,7 @@ export interface InitialTopMostItemIndexParams {
   scrollTo$: TSubject<ScrollToOptions>
   scrollToIndex$: TSubject<TScrollLocation>
   offsetList$: TObservable<OffsetList>
+  isHorizontal: boolean | undefined
 }
 
 export function initialTopMostItemIndexEngine({
@@ -16,13 +17,15 @@ export function initialTopMostItemIndexEngine({
   scrollTop$,
   scrollTo$,
   offsetList$,
+  isHorizontal,
 }: InitialTopMostItemIndexParams) {
   const scrolledToTopMostItem$ = subject(!initialTopMostItemIndex)
 
   scrollTop$
     .pipe(withLatestFrom(scrollTo$, scrolledToTopMostItem$))
     .subscribe(([scrollTop, scrollTo, scrolledToTopMostItem]) => {
-      if (scrollTop === scrollTo.top && !scrolledToTopMostItem) {
+      const isSameLocation = isHorizontal ? scrollTop === scrollTo.left : scrollTop === scrollTo.top
+      if (isSameLocation && !scrolledToTopMostItem) {
         // skip a tick, so that the list$ can grab the scrollTop$ update
         setTimeout(() => {
           scrolledToTopMostItem$.next(true)

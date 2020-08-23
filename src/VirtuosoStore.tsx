@@ -29,6 +29,7 @@ interface TVirtuosoConstructorParams {
   itemHeight?: number
   defaultItemHeight?: number
   initialTopMostItemIndex?: number
+  isHorizontal?: boolean
 }
 
 const VirtuosoStore = ({
@@ -37,6 +38,7 @@ const VirtuosoStore = ({
   itemHeight,
   initialTopMostItemIndex,
   defaultItemHeight,
+  isHorizontal,
 }: TVirtuosoConstructorParams) => {
   const transposer$ = subject<Transposer>(new StubIndexTransposer())
   const viewportHeight$ = subject(0)
@@ -79,6 +81,7 @@ const VirtuosoStore = ({
     totalCount$,
     topListHeight$,
     heightsChanged$,
+    isHorizontal,
   })
 
   const { listHeight$, list$, listOffset$, startReached$, endReached$ } = listEngine({
@@ -101,9 +104,10 @@ const VirtuosoStore = ({
     offsetList$,
     scrollTop$,
     scrollTo$,
+    isHorizontal,
   })
 
-  const { maxRangeSize$ } = maxRangeSizeEngine({ scrollTo$, offsetList$, scrollTop$, list$ })
+  const { maxRangeSize$ } = maxRangeSizeEngine({ scrollTo$, offsetList$, scrollTop$, list$, isHorizontal })
 
   const { topItemCount$ } = topItemCountEngine({ offsetList$, totalCount$, transposer$, viewportHeight$, topList$ })
 
@@ -184,10 +188,17 @@ const VirtuosoStore = ({
             } else {
               let children: ReactElement
               if (scrollSeek && renderPlaceholder) {
-                children = React.createElement(scrollSeek.placeholder, {
-                  height: itemProps['data-known-size'],
-                  index: item.index,
-                })
+                if (isHorizontal) {
+                  children = React.createElement(scrollSeek.horizontalplaceholder, {
+                    width: itemProps['data-known-size'],
+                    index: item.index,
+                  })
+                } else {
+                  children = React.createElement(scrollSeek.verticalPlaceholder, {
+                    height: itemProps['data-known-size'],
+                    index: item.index,
+                  })
+                }
               } else {
                 children = render(item.transposedIndex, item.groupIndex)
               }
