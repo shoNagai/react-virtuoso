@@ -55,7 +55,7 @@ const DefaultScrollContainer: TScrollContainer = ({
         reportScrollTop(scrollTop)
       }
     },
-    [reportScrollTop]
+    [reportScrollTop, isHorizontal]
   )
 
   const ref = useCallback(
